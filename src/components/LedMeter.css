@@ -1,0 +1,80 @@
+.meter {
+  display: flex;
+  align-items: stretch;
+  gap: 7px;
+  height: 118px;
+}
+
+.meter__scale {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 0 18px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--silk-faint);
+}
+
+.meter__channel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.meter__bar {
+  --level: 0;
+  --peak: 0;
+  --segments: 16;
+  --seg: calc(100% / var(--segments));
+  position: relative;
+  flex: 1;
+  width: 12px;
+  border-radius: 2px;
+  background: #08090a;
+  box-shadow:
+    0 0 0 3px #0f1012,
+    0 0 0 4px rgb(255 255 255 / 0.05);
+  -webkit-mask-image: repeating-linear-gradient(to top, #000 0 calc(var(--seg) - 2px), transparent calc(var(--seg) - 2px) var(--seg));
+  mask-image: repeating-linear-gradient(to top, #000 0 calc(var(--seg) - 2px), transparent calc(var(--seg) - 2px) var(--seg));
+}
+
+/* Unlit LEDs. */
+.meter__bar::before,
+.meter__lit {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--led-green) 0 62.5%,
+    var(--led-amber) 62.5% 87.5%,
+    var(--led-red) 87.5% 100%
+  );
+}
+
+.meter__bar::before {
+  opacity: 0.13;
+}
+
+.meter__lit {
+  clip-path: inset(calc((1 - var(--level)) * 100%) 0 0 0);
+  filter: drop-shadow(0 0 3px rgb(61 255 134 / 0.7));
+}
+
+.meter__peak {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--peak) * 100% - var(--seg));
+  height: var(--seg);
+  background: #fff;
+  /* Hidden while the peak is at zero. */
+  opacity: clamp(0, calc(var(--peak) * 1000), 0.85);
+}
+
+.meter__name {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}

@@ -1,0 +1,279 @@
+.pad-grid {
+  --pad: 128px;
+  --gap: 14px;
+  display: grid;
+  grid-template-columns: repeat(4, var(--pad));
+  grid-auto-rows: var(--pad);
+  gap: var(--gap);
+  padding: 18px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #141518, #1b1c20);
+  box-shadow:
+    inset 0 3px 8px rgb(0 0 0 / 0.75),
+    inset 0 -1px 0 rgb(255 255 255 / 0.04),
+    0 1px 0 rgb(255 255 255 / 0.07);
+}
+
+/* The recess each pad sits in. */
+.pad-well {
+  position: relative;
+  border-radius: 17px;
+  padding: 5px;
+  background: #0c0d0f;
+  box-shadow:
+    inset 0 3px 6px rgb(0 0 0 / 0.9),
+    0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.pad {
+  --c: 236 238 242;
+  --lift: 4px;
+  --tint: 0.12;
+  --glow: 0 0 0 0 transparent;
+  --halo: 0 0 0 0 transparent;
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 13px;
+  color: rgb(255 255 255 / 0.88);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  background:
+    radial-gradient(140% 90% at 50% -12%, rgb(255 255 255 / 0.11), transparent 58%),
+    linear-gradient(180deg, rgb(var(--c) / var(--tint)), rgb(var(--c) / calc(var(--tint) * 0.55))),
+    linear-gradient(180deg, #383a41, #2a2c31);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    inset 0 -3px 4px rgb(0 0 0 / 0.32),
+    0 var(--lift) 0 #09090b,
+    0 calc(var(--lift) + 3px) 10px rgb(0 0 0 / 0.55),
+    var(--glow),
+    var(--halo);
+  transform: translateY(calc(var(--lift) * -1 + 4px));
+  transition:
+    transform 55ms ease-out,
+    box-shadow 70ms ease-out,
+    filter 120ms ease-out,
+    color 80ms;
+  animation: pad-boot 420ms ease-out both;
+}
+
+.pad:hover {
+  filter: brightness(1.08);
+}
+
+.pad:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 4px;
+}
+
+.pad.is-pressed {
+  --lift: 1px;
+}
+
+/* Backlight on: the silicone glows and the printed legend reads as dark ink. */
+.pad.is-lit {
+  color: rgb(10 10 12 / 0.82);
+  --glow: 0 0 22px 3px rgb(var(--c) / 0.55);
+  --halo: 0 0 64px 10px rgb(var(--c) / 0.22);
+  background:
+    radial-gradient(75% 65% at 50% 42%, rgb(255 255 255 / 0.6), transparent 70%),
+    radial-gradient(circle at 50% 50%, transparent 52%, rgb(0 0 0 / 0.22) 100%),
+    rgb(var(--c));
+}
+
+.pad.is-lit .pad__light {
+  opacity: 1;
+}
+
+/* Light spilling out of the pad onto the panel. */
+.pad__light {
+  position: absolute;
+  inset: -10px;
+  border-radius: 22px;
+  background: radial-gradient(closest-side, rgb(var(--c) / 0.4), transparent);
+  filter: blur(6px);
+  opacity: 0;
+  transition: opacity 90ms ease-out;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.pad__face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 9px 10px 11px;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.pad__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.pad__key {
+  display: inline-grid;
+  place-items: center;
+  min-width: 23px;
+  height: 21px;
+  padding: 0 5px;
+  border: 1.5px solid currentColor;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  opacity: 0.8;
+}
+
+.pad__key:empty {
+  visibility: hidden;
+}
+
+.pad__key.is-unset {
+  border-style: dashed;
+  opacity: 0.35;
+}
+
+.pad__num {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  opacity: 0.5;
+}
+
+.pad__label {
+  align-self: center;
+  justify-self: center;
+  max-width: 100%;
+  text-align: center;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.35);
+}
+
+.pad.is-lit .pad__label {
+  text-shadow: none;
+}
+
+.pad--xl .pad__label { font-size: 34px; }
+.pad--lg .pad__label { font-size: 25px; }
+.pad--md .pad__label { font-size: 21px; }
+.pad--sm .pad__label { font-size: 17px; }
+
+.pad__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  min-height: 14px;
+}
+
+.pad__badge,
+.pad__edit {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.pad__edit {
+  margin-left: auto;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 0.35);
+  color: var(--led-amber);
+  opacity: 1;
+}
+
+.pad__progress {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(0 0 0 / 0.16);
+  overflow: hidden;
+  opacity: 0;
+}
+
+.pad__progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.5);
+  transform-origin: left center;
+  transform: scaleX(var(--progress, 0));
+}
+
+.pad.is-lit .pad__progress {
+  opacity: 1;
+}
+
+/* Empty slots: unlit rubber, legend barely printed. */
+.pad.is-empty {
+  --tint: 0;
+}
+
+.pad.is-empty .pad__label {
+  font-size: 15px;
+  letter-spacing: 0.22em;
+  opacity: 0.28;
+}
+
+.pad.is-loading .pad__label {
+  animation: pad-loading 0.9s ease-in-out infinite alternate;
+}
+
+.pad.is-error {
+  --c: 255 59 59;
+  --tint: 0.2;
+}
+
+.pad.is-editing {
+  --tint: 0.3;
+}
+
+.pad.is-drop-target {
+  --tint: 0.45;
+  outline: 2px dashed rgb(var(--c));
+  outline-offset: 3px;
+  filter: brightness(1.2);
+}
+
+/* While files are dragged over the window, invite drops on every pad. */
+.is-dragging-files .pad:not(.is-drop-target) {
+  outline: 1.5px dashed rgb(255 255 255 / 0.25);
+  outline-offset: 3px;
+}
+
+@keyframes pad-loading {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
+
+/* A quick LED self-test flash when a bank is shown. */
+@keyframes pad-boot {
+  from {
+    filter: brightness(1.7) saturate(1.4);
+  }
+}

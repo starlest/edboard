@@ -1,0 +1,158 @@
+.hw {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.hw__leds {
+  display: flex;
+  gap: 6px;
+  height: 8px;
+  align-items: center;
+}
+
+.led {
+  --led: var(--led-amber);
+  --led-glow: rgb(255 178 26 / 0.45);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(30 30 30);
+  box-shadow:
+    inset 0 1px 1px rgb(0 0 0 / 0.8),
+    0 1px 0 rgb(255 255 255 / 0.07);
+  transition: background-color 60ms, box-shadow 60ms;
+}
+
+.led--green {
+  --led: var(--led-green);
+  --led-glow: rgb(61 255 134 / 0.45);
+}
+
+.led--red {
+  --led: var(--led-red);
+  --led-glow: rgb(255 59 59 / 0.45);
+}
+
+.led--small {
+  width: 6px;
+  height: 6px;
+}
+
+.led.is-on,
+.led.is-blink {
+  background: var(--led);
+  box-shadow:
+    0 0 6px 1px var(--led),
+    0 0 14px 2px var(--led-glow);
+}
+
+.led.is-blink {
+  animation: led-blink 0.9s steps(2, jump-none) infinite;
+}
+
+@keyframes led-blink {
+  50% {
+    background: rgb(30 30 30);
+    box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.8);
+  }
+}
+
+.hw__button {
+  --cap-hi: #44474e;
+  --cap-lo: #2c2e33;
+  position: relative;
+  width: 66px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: #0c0d0f;
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.9);
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.hw__cap {
+  position: absolute;
+  inset: 3px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--silk);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  background: linear-gradient(180deg, var(--cap-hi), var(--cap-lo));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    inset 0 -2px 3px rgb(0 0 0 / 0.3),
+    0 3px 0 #08080a,
+    0 4px 6px rgb(0 0 0 / 0.5);
+  transform: translateY(-2px);
+  transition: transform 50ms ease-out, box-shadow 50ms ease-out;
+}
+
+.hw__button:active .hw__cap {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    inset 0 -1px 2px rgb(0 0 0 / 0.3),
+    0 0 0 #08080a,
+    0 1px 2px rgb(0 0 0 / 0.5);
+}
+
+.hw__label {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Bank select: square caps with a big letter. */
+.hw--bank .hw__button {
+  width: 54px;
+  height: 46px;
+}
+
+.hw--bank .hw__cap {
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.hw--bank .hw__button[aria-pressed='true'] .hw__cap {
+  color: var(--led-amber);
+  text-shadow: 0 0 8px rgb(255 178 26 / 0.6);
+}
+
+/* The big red panic button. */
+.hw--stop .hw__button {
+  width: 112px;
+  height: 64px;
+  border-radius: 12px;
+}
+
+.hw--stop .hw__cap {
+  --cap-hi: #ff5a4a;
+  --cap-lo: #c41f1f;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 19px;
+  letter-spacing: 0.12em;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.4);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    inset 0 -3px 4px rgb(80 0 0 / 0.45),
+    0 4px 0 #5c0b0b,
+    0 6px 12px rgb(0 0 0 / 0.55),
+    0 0 18px rgb(255 59 59 / 0.25);
+}
+
+.hw--stop .hw__button:active .hw__cap {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    inset 0 -2px 3px rgb(80 0 0 / 0.45),
+    0 1px 0 #5c0b0b,
+    0 2px 4px rgb(0 0 0 / 0.55),
+    0 0 26px rgb(255 59 59 / 0.45);
+}
