@@ -34,6 +34,10 @@ npm run build
 npm run preview
 ```
 
+### Deploying
+
+Edboard is a static site, so any static host works. On **Vercel**, import the repo and deploy the branch that contains the app (Vercel's production domain builds `main`). `vercel.json` pins the build (`npm run build` → `dist/`), so it builds correctly even if the project was created with the "Other" framework preset.
+
 ## Using it on stream
 
 1. Open Edboard in your browser (or in OBS: **Docks → Custom Browser Docks**, paste the URL).
