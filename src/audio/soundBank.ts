@@ -3,13 +3,14 @@ import type { SoundSource } from '../state/types.ts'
 import { BuiltinRenderer } from './builtinRenderer.ts'
 import { findStart, levelGain, measureLoudness } from './dsp/loudness.ts'
 import { dbToGain } from './dsp/math.ts'
+import { SOUND_PACK } from './soundPack.ts'
 import { DEFAULT_LOUDNESS, PEAK_CEILING, type RenderedSound } from './synth/render.ts'
 
 export type SoundStatus = 'idle' | 'loading' | 'ready' | 'error'
 
 export interface LoadedSound {
   buffer: AudioBuffer
-  /** Gain that levels the clip to the house loudness (built-ins are pre-levelled: 1). */
+  /** Gain that levels the clip to the house loudness (synthesised built-ins are pre-levelled: 1). */
   levelGain: number
   /** Leading silence to skip, in seconds. */
   offset: number
@@ -62,16 +63,43 @@ export class SoundBank {
     return this.entries.get(sourceKey(source))?.sound
   }
 
-  /** Renders the given built-in sounds in the background (first id first). */
+  /**
+   * Prepares the given built-in sounds in the background (first id first):
+   * sound-pack files from `sounds/` where the deployment has one, otherwise
+   * synthesised in workers.
+   */
   renderBuiltins(ids: readonly string[]): void {
     const pending = ids.filter((id) => this.status(`builtin:${id}`) === 'idle')
     if (pending.length === 0) return
     for (const id of pending) this.set(`builtin:${id}`, { status: 'loading' })
+    const synthesise: string[] = []
+    for (const id of pending) {
+      const url = SOUND_PACK.get(id)
+      if (url) void this.loadPackSound(id, url)
+      else synthesise.push(id)
+    }
+    this.synthesise(synthesise)
+  }
+
+  private synthesise(ids: readonly string[]): void {
+    if (ids.length === 0) return
     this.renderer ??= new BuiltinRenderer(this.context.sampleRate, {
       onRendered: (sound) => this.set(`builtin:${sound.id}`, { status: 'ready', sound: this.wrapRendered(sound) }),
       onError: (id, error) => this.set(`builtin:${id}`, { status: 'error', error }),
     })
-    this.renderer.enqueue(pending)
+    this.renderer.enqueue(ids)
+  }
+
+  /** Loads a sound-pack file; if it can't be fetched or decoded, falls back to the synthesised sound. */
+  private async loadPackSound(id: string, url: string): Promise<void> {
+    try {
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      this.set(`builtin:${id}`, { status: 'ready', sound: this.analyse(await this.decode(await response.arrayBuffer())) })
+    } catch (error) {
+      console.warn(`Edboard sound pack: couldn't load the file for "${id}", using the built-in sound instead.`, error)
+      this.synthesise([id])
+    }
   }
 
   private wrapRendered(sound: RenderedSound): LoadedSound {

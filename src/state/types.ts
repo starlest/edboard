@@ -61,6 +61,8 @@ export interface Settings {
 
 export interface BoardState {
   version: 1
+  /** Factory layout this board was created from (see FACTORY_REVISION). */
+  factoryRevision: number
   /** Bank currently shown on the pads. */
   bank: number
   bankNames: string[]

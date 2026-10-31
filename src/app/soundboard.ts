@@ -188,9 +188,13 @@ export class Soundboard {
 
   // ---------------------------------------------------------------- playing
 
-  /** Gain for a pad's sound: pad volume × loudness levelling for custom files. */
+  /**
+   * Gain for a pad's sound: pad volume × loudness levelling. Built-ins are
+   * always levelled (synthesised ones carry a gain of 1, sound-pack files their
+   * measured gain); the user's own files only when the pad's auto-level is on.
+   */
   private gainFor(config: Pick<PadConfig, 'volume' | 'autoLevel'>, source: SoundSource, levelGain: number): number {
-    return config.volume * (source.kind === 'file' && config.autoLevel ? levelGain : 1)
+    return config.volume * (source.kind === 'builtin' || config.autoLevel ? levelGain : 1)
   }
 
   press(pad: number): void {

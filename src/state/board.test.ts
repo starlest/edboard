@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { getBuiltin } from '../audio/synth/library.ts'
 import { labelFromFileName } from '../app/soundboard.ts'
 import { boardReducer, referencedFiles, sanitizeBoard } from './board.ts'
-import { BANK_A_KEYS, BANK_B_KEYS, defaultBoard } from './defaults.ts'
+import { BANK_A_KEYS, BANK_B_KEYS, defaultBoard, defaultKey, FACTORY_REVISION } from './defaults.ts'
 import { isBindable, keyLabel } from './keys.ts'
+import { legacyFactoryPads } from './legacy.ts'
 import { loadBoard, saveBoard, STORAGE_KEY } from './persistence.ts'
 import { PAD_COUNT, padName } from './types.ts'
 
@@ -16,13 +17,24 @@ describe('default board', () => {
     expect(board.bank).toBe(0)
   })
 
-  it('fills banks A and B with valid built-in sounds and leaves C and D empty', () => {
-    for (let pad = 0; pad < 32; pad++) {
+  it('puts 8 sounds on the top of bank A and leaves every other pad empty', () => {
+    expect(board.pads.slice(0, 8).map((p) => p.label)).toEqual([
+      'FAH!',
+      'LAUGH',
+      'AIR HORN',
+      'VINE BOOM',
+      'BRUH',
+      'SAD TROMBONE',
+      'BA DUM TSS',
+      'CRICKETS',
+    ])
+    for (let pad = 0; pad < 8; pad++) {
       const source = board.pads[pad].source
       expect(source?.kind).toBe('builtin')
       if (source?.kind === 'builtin') expect(getBuiltin(source.id), source.id).toBeDefined()
     }
-    for (let pad = 32; pad < PAD_COUNT; pad++) expect(board.pads[pad].source).toBeNull()
+    for (let pad = 8; pad < PAD_COUNT; pad++) expect(board.pads[pad].source).toBeNull()
+    expect(board.factoryRevision).toBe(FACTORY_REVISION)
   })
 
   it('maps the keyboard like the pad grid, with no duplicate shortcuts', () => {
@@ -32,8 +44,10 @@ describe('default board', () => {
     expect(new Set(keys).size).toBe(keys.length)
   })
 
-  it('uses hold mode for the censor bleep', () => {
-    expect(board.pads[15]).toMatchObject({ label: 'BLEEP', mode: 'hold' })
+  it('keeps shortcuts on the empty pads so loaded sounds are playable straight away', () => {
+    expect(board.pads[8]).toMatchObject({ source: null, key: 'KeyA' })
+    expect(board.pads[16]).toMatchObject({ source: null, key: 'Digit5' })
+    expect(board.pads[32].key).toBeNull()
   })
 })
 
@@ -43,7 +57,7 @@ describe('boardReducer', () => {
   it('moves a shortcut to its new pad, taking it from the old one', () => {
     const next = boardReducer(board, { type: 'update-pad', pad: 0, patch: { key: 'KeyW' } })
     expect(next.pads[0].key).toBe('KeyW')
-    expect(next.pads[5].key).toBeNull() // BRUH lost W
+    expect(next.pads[5].key).toBeNull() // SAD TROMBONE lost W
     expect(board.pads[5].key).toBe('KeyW') // original untouched (immutable)
   })
 
@@ -55,7 +69,7 @@ describe('boardReducer', () => {
 
   it('swaps pad contents but keeps shortcuts on their physical positions', () => {
     const next = boardReducer(board, { type: 'swap-pads', a: 0, b: 1 })
-    expect(next.pads[0]).toMatchObject({ label: 'AIR HORN', key: 'Digit1' })
+    expect(next.pads[0]).toMatchObject({ label: 'LAUGH', key: 'Digit1' })
     expect(next.pads[1]).toMatchObject({ label: 'FAH!', key: 'Digit2' })
   })
 
@@ -111,11 +125,51 @@ describe('sanitizeBoard', () => {
     }
     const board = sanitizeBoard(raw)
     expect(board.bank).toBe(1)
-    expect(board.bankNames.slice(0, 2)).toEqual(['FUNNY', 'SFX'])
+    expect(board.bankNames.slice(0, 2)).toEqual(['FUNNY', 'BANK B'])
     expect(board.pads[0]).toMatchObject({ label: 'MINE', color: 'red', key: 'KeyQ', volume: 1, mode: 'loop', source: null })
     expect(board.pads[1].key).toBeNull() // duplicate shortcut dropped
     expect(board.pads[4].key).toBeNull() // factory KeyQ (A05) already taken by pad 0
     expect(board.settings).toMatchObject({ masterVolume: 0.5, solo: false })
+  })
+})
+
+describe('upgrading boards saved under the old 32-sound layout', () => {
+  const revision1 = () => ({
+    version: 1,
+    bank: 0,
+    bankNames: ['MEMES', 'SFX', 'BANK C', 'BANK D'],
+    pads: [...legacyFactoryPads(1, defaultKey), ...defaultBoard().pads.slice(32)],
+    settings: {},
+  })
+
+  it('moves untouched pads to the new 8-sound layout', () => {
+    const board = sanitizeBoard(revision1())
+    expect(board.pads).toEqual(defaultBoard().pads)
+    expect(board.bankNames).toEqual(defaultBoard().bankNames)
+    expect(board.factoryRevision).toBe(FACTORY_REVISION)
+  })
+
+  it('keeps everything the user changed', () => {
+    const saved = revision1()
+    saved.pads[0] = { ...saved.pads[0], source: { kind: 'file', fileId: 'my-fah', name: 'fahhh.mp3' } } as never
+    saved.pads[9] = { ...saved.pads[9], label: 'NAILED IT' } // A10 was CORRECT
+    saved.pads[15] = { ...saved.pads[15], key: 'Space' } // BLEEP with a new key: still factory content
+    saved.bankNames[1] = 'MY SFX'
+    const board = sanitizeBoard(saved)
+    expect(board.pads[0].source).toEqual({ kind: 'file', fileId: 'my-fah', name: 'fahhh.mp3' })
+    expect(board.pads[1].label).toBe('LAUGH') // untouched AIR HORN slot follows the new layout
+    expect(board.pads[9]).toMatchObject({ label: 'NAILED IT', source: { kind: 'builtin', id: 'correct' } })
+    expect(board.pads[15]).toMatchObject({ source: null, key: 'Space' })
+    expect(board.bankNames[1]).toBe('MY SFX')
+  })
+
+  it('leaves boards saved under the current layout alone', () => {
+    const current = boardReducer(defaultBoard(), {
+      type: 'update-pad',
+      pad: 9,
+      patch: { label: 'CORRECT', color: 'green', source: { kind: 'builtin', id: 'correct' } },
+    })
+    expect(sanitizeBoard(JSON.parse(JSON.stringify(current))).pads[9].label).toBe('CORRECT')
   })
 })
 

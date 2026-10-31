@@ -1,6 +1,6 @@
 # EDBOARD
 
-**A hardware-style soundboard for streamers.** Click a pad or hit a shortcut to fire a sound on stream — FAH!, air horn, ba-dum-tss, sad trombone and 28 more are built in, and you can drop your own clips onto any pad.
+**A hardware-style soundboard for streamers.** Click a pad or hit a shortcut to fire a sound on stream — FAH!, a laugh, air horn, vine boom and more are built in, and you can drop your own clips onto any pad.
 
 ![EDBOARD — a sampler-style soundboard with glowing pads, an amber LCD, knobs and LED meters](docs/edboard.jpg)
 
@@ -8,8 +8,9 @@ It looks and behaves like a piece of studio gear: rubber pads that press down an
 
 ## Features
 
-- **64 pads in 4 banks** (4 × 4 grid, like an MPC / SP-404). Bank A is meme classics, bank B is sound effects, banks C and D are yours.
-- **32 built-in sounds, no samples shipped.** Every built-in sound is synthesised in code at start-up (a formant voice synthesiser does the "FAH!", "BRUH", "OOF" and "WOW"), so there is no licensed audio in the repo and nothing to download.
+- **64 pads in 4 banks** (4 × 4 grid, like an MPC / SP-404). The factory board starts with 8 sounds on bank A; every other pad is yours to fill.
+- **33 built-in sounds, no samples shipped.** Every built-in sound is synthesised in code at start-up (a formant voice synthesiser does the "FAH!", "LAUGH", "BRUH", "OOF" and "WOW"), so there is no licensed audio in the repo and nothing to download.
+- **Sound pack:** put an audio file named after a built-in sound in [`sounds/`](sounds/README.md) (e.g. `sounds/fah.mp3`) and it replaces that sound for everyone who opens your deployment.
 - **Keyboard shortcuts laid out like the pads.** Bank A sits under your left hand (`1-4 / Q-R / A-F / Z-V`), bank B under your right (`5-8 / T-I / G-K / B-,`). Shortcuts work for every bank, whichever one is on screen, and can be re-bound to any key (numpad and F13–F24 for macro keyboards / Stream Deck included).
 - **Your own sounds.** Drop MP3 / WAV / OGG / M4A / FLAC files on a pad (several files fill the next empty pads), or load them in the pad editor. Leading silence is trimmed and clips are loudness-levelled so nothing blows out your stream (switchable per pad).
 - **Play modes per pad:** one-shot (re-press restarts), overlap (spam-friendly), hold (plays while held — perfect for the censor BLEEP), toggle, and loop.
@@ -58,23 +59,28 @@ Edboard is a static site, so any static host works. On **Vercel**, import the re
 | Swap two pads | **EDIT** mode, then drag one pad onto another |
 | Knobs | Drag up/down, scroll, or arrow keys · double-click to reset · Shift for fine control |
 
-## Built-in sounds
+## Default board
 
-| Bank A — Memes | | | |
+| Bank A | | | |
 | --- | --- | --- | --- |
-| `1` FAH! | `2` AIR HORN | `3` BA DUM TSS | `4` SAD TROMBONE |
-| `Q` VINE BOOM | `W` BRUH | `E` CRICKETS | `R` APPLAUSE |
-| `A` WRONG | `S` CORRECT | `D` DRUM ROLL | `F` DUN DUN DUN |
-| `Z` SCRATCH | `X` BONK | `C` VICTORY | `V` BLEEP (hold) |
+| `1` FAH! | `2` LAUGH | `3` AIR HORN | `4` VINE BOOM |
+| `Q` BRUH | `W` SAD TROMBONE | `E` BA DUM TSS | `R` CRICKETS |
+| `A` · | `S` · | `D` · | `F` · |
+| `Z` · | `X` · | `C` · | `V` · |
 
-| Bank B — SFX | | | |
-| --- | --- | --- | --- |
-| `5` OOF | `6` WOW | `7` LASER | `8` EXPLOSION |
-| `T` BOING | `Y` WHOOSH | `U` COIN | `I` POWER UP |
-| `G` GAME OVER | `H` CHA-CHING | `J` HEARTBEAT | `K` ALARM |
-| `B` COUNTDOWN | `N` SUSPENSE | `M` SLIDE WHISTLE | `,` GONG |
+The empty pads already have shortcuts (bank B too: `5-8 / T-I / G-K / B-,`). Fill them by dropping audio files on them, or pick any of the 33 built-in sounds in the pad editor: voices (FAH!, LAUGH, BRUH, OOF, WOW), meme classics (air horn, vine boom, sad trombone, ba-dum-tss, bonk, record scratch, censor bleep), stage & game show (applause, crickets, drum roll, dun-dun-dun, victory fanfare, wrong buzzer, correct ding), sound effects (laser, explosion, boing, whoosh, cha-ching, heartbeat, alarm, countdown, suspense riser, slide whistle, gong) and 8-bit (coin, power-up, game over).
 
-These are original synthesised takes on the classics, not the original meme recordings. If you have the exact clip you want (say, the original "FAH"), drop it onto the pad — your file replaces the built-in sound.
+The built-in sounds are original synthesised takes on the classics, not the original meme recordings.
+
+## Sound pack: make your own clips the default
+
+Want the exact meme clip — say, the original "FAH" — on every device that opens your site? Add it to the repo:
+
+1. Name the file after the sound it replaces: `fah.mp3`, `laugh.mp3`, `air-horn.wav`… (ids are listed in [`sounds/README.md`](sounds/README.md)).
+2. Put it in the `sounds/` folder (on GitHub: open `sounds` → **Add file → Upload files**) and commit.
+3. Redeploy. The file is bundled at build time, trimmed and loudness-levelled like the other sounds, and replaces the synthesised version for everyone.
+
+Only add audio you have the right to publish: files in `sounds/` are served publicly with your site. A clip you drop onto a pad in the browser stays private to that browser.
 
 ## How it works
 
@@ -92,12 +98,12 @@ src/
 
 - Built-in sounds are plain TypeScript functions that write samples into a buffer. They render deterministically in a pool of Web Workers at the audio device's sample rate, are levelled to −14 LUFS (momentary max), and then play as ordinary `AudioBuffer`s — so they start instantly.
 - Pads trigger on `pointerdown` / `keydown` (not on release) for the lowest latency.
-- To add a built-in sound, write a recipe in `src/audio/synth/sounds/` and register it in `src/audio/synth/library.ts`.
+- To add a built-in sound, write a recipe in `src/audio/synth/sounds/` and register it in `src/audio/synth/library.ts`. Sound-pack files (`sounds/`) are found by `import.meta.glob` in `src/audio/soundPack.ts`.
 
 ## Development
 
 ```bash
-npm test           # unit tests (Vitest) — DSP, every built-in sound, board state
+npm test           # unit tests (Vitest) — DSP, every built-in sound, sound pack, board state
 npm run lint       # oxlint
 npm run typecheck  # tsc
 ```

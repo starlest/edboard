@@ -1,4 +1,5 @@
 import { applyReverb } from '../../dsp/effects.ts'
+import type { EnvPoint } from '../../dsp/env.ts'
 import type { BuiltinSound } from '../types.ts'
 import { renderVoice } from '../voice.ts'
 
@@ -269,5 +270,48 @@ export const wow: BuiltinSound = {
       },
     )
     applyReverb(c.out, { room: 0.4, damp: 0.55, wet: 0.08 })
+  },
+}
+
+export const laugh: BuiltinSound = {
+  id: 'laugh',
+  name: 'LAUGH',
+  description: 'Big belly laugh: HA HA HA HA!',
+  category: 'voice',
+  duration: 2.4,
+  render(c) {
+    // A run of breathy "ha" syllables that slow down and fall in pitch, then an exhale.
+    const f0: EnvPoint[] = []
+    const voicing: EnvPoint[] = []
+    const aspiration: EnvPoint[] = []
+    const openQuotient: EnvPoint[] = []
+    let t = 0.01
+    for (let k = 0; k < 7; k++) {
+      const length = 0.19 + 0.014 * k
+      const pitch = 290 - 13 * k
+      const level = k === 0 ? 1 : 0.97 - 0.06 * k
+      aspiration.push([t, 0], [t + 0.012, 0.55 * level], [t + 0.05, 0.4 * level], [t + 0.075, 0.06])
+      voicing.push([t, 0], [t + 0.045, 0], [t + 0.075, level], [t + length * 0.62, level * 0.85], [t + length * 0.86, 0])
+      f0.push([t + 0.04, pitch * 1.06], [t + length * 0.8, pitch * 0.8])
+      openQuotient.push([t + 0.001, 0.62], [t + 0.08, 0.45], [t + length * 0.9, 0.6])
+      t += length
+    }
+    aspiration.push([t, 0], [t + 0.05, 0.28], [t + 0.38, 0])
+    renderVoice(
+      c,
+      0,
+      {
+        f0,
+        formants: [
+          [0, 830, 1260, 2650, 3500],
+          [t, 790, 1210, 2600, 3450],
+        ],
+        voicing,
+        aspiration,
+        openQuotient,
+      },
+      { brightness: 7500, jitter: 0.02, shimmer: 0.08, drive: 1.2 },
+    )
+    applyReverb(c.out, { room: 0.35, damp: 0.6, wet: 0.08 })
   },
 }

@@ -20,47 +20,27 @@ export const BANK_B_KEYS = [
   'KeyB', 'KeyN', 'KeyM', 'Comma',
 ] as const
 
-type Preset = readonly [builtinId: string, label: string, color: PadColor, mode?: PlayMode]
+export type Preset = readonly [builtinId: string, label: string, color: PadColor, mode?: PlayMode]
 
-const BANK_A: readonly Preset[] = [
+/**
+ * Bumped whenever the factory layout changes. Boards saved under an older
+ * revision get their untouched pads moved to the new layout (see legacy.ts).
+ */
+export const FACTORY_REVISION = 2
+
+/** Factory sounds, in pad order from A01. Everything after them starts empty. */
+const FACTORY_PADS: readonly Preset[] = [
   ['fah', 'FAH!', 'red'],
+  ['laugh', 'LAUGH', 'amber'],
   ['air-horn', 'AIR HORN', 'orange'],
-  ['rimshot', 'BA DUM TSS', 'lime'],
-  ['sad-trombone', 'SAD TROMBONE', 'blue'],
   ['vine-boom', 'VINE BOOM', 'violet'],
   ['bruh', 'BRUH', 'teal'],
+  ['sad-trombone', 'SAD TROMBONE', 'blue'],
+  ['rimshot', 'BA DUM TSS', 'lime'],
   ['crickets', 'CRICKETS', 'green'],
-  ['applause', 'APPLAUSE', 'amber'],
-  ['wrong', 'WRONG', 'red'],
-  ['correct', 'CORRECT', 'green'],
-  ['drum-roll', 'DRUM ROLL', 'orange'],
-  ['dun-dun-dun', 'DUN DUN DUN', 'violet'],
-  ['record-scratch', 'SCRATCH', 'magenta'],
-  ['bonk', 'BONK', 'amber'],
-  ['victory', 'VICTORY', 'cyan'],
-  ['bleep', 'BLEEP', 'white', 'hold'],
 ]
 
-const BANK_B: readonly Preset[] = [
-  ['oof', 'OOF', 'pink'],
-  ['wow', 'WOW', 'magenta'],
-  ['laser', 'LASER', 'cyan'],
-  ['explosion', 'EXPLOSION', 'orange'],
-  ['boing', 'BOING', 'lime'],
-  ['whoosh', 'WHOOSH', 'teal'],
-  ['coin', 'COIN', 'amber'],
-  ['power-up', 'POWER UP', 'green'],
-  ['game-over', 'GAME OVER', 'red'],
-  ['cha-ching', 'CHA-CHING', 'green'],
-  ['heartbeat', 'HEARTBEAT', 'pink'],
-  ['alarm', 'ALARM', 'red'],
-  ['countdown', 'COUNTDOWN', 'blue'],
-  ['suspense', 'SUSPENSE', 'violet'],
-  ['slide-whistle', 'SLIDE WHISTLE', 'cyan'],
-  ['gong', 'GONG', 'amber'],
-]
-
-export const DEFAULT_BANK_NAMES = ['MEMES', 'SFX', 'BANK C', 'BANK D']
+export const DEFAULT_BANK_NAMES = ['MEMES', 'BANK B', 'BANK C', 'BANK D']
 
 export const DEFAULT_SETTINGS: Settings = {
   masterVolume: 0.8,
@@ -76,22 +56,28 @@ export function emptyPad(key: string | null = null): PadConfig {
   return { label: '', color: 'white', key, volume: 1, mode: 'oneshot', source: null, autoLevel: true }
 }
 
-/** Factory configuration of a single pad. */
-export function defaultPad(pad: number): PadConfig {
+/** Shortcut a pad gets out of the box: banks A and B are mapped, C and D are free. */
+export function defaultKey(pad: number): string | null {
   const bank = Math.floor(pad / PADS_PER_BANK)
-  const slot = pad % PADS_PER_BANK
-  const presets = bank === 0 ? BANK_A : bank === 1 ? BANK_B : null
   const keys = bank === 0 ? BANK_A_KEYS : bank === 1 ? BANK_B_KEYS : null
-  const preset = presets?.[slot]
-  const key = keys?.[slot] ?? null
-  if (!preset) return emptyPad(key)
+  return keys?.[pad % PADS_PER_BANK] ?? null
+}
+
+export function presetPad(preset: Preset, key: string | null): PadConfig {
   const [id, label, color, mode = 'oneshot'] = preset
   return { label, color, key, volume: 1, mode, source: { kind: 'builtin', id }, autoLevel: true }
+}
+
+/** Factory configuration of a single pad. */
+export function defaultPad(pad: number): PadConfig {
+  const preset = FACTORY_PADS[pad]
+  return preset ? presetPad(preset, defaultKey(pad)) : emptyPad(defaultKey(pad))
 }
 
 export function defaultBoard(): BoardState {
   return {
     version: 1,
+    factoryRevision: FACTORY_REVISION,
     bank: 0,
     bankNames: [...DEFAULT_BANK_NAMES],
     pads: Array.from({ length: PAD_COUNT }, (_, pad) => defaultPad(pad)),

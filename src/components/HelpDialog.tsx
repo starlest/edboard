@@ -1,3 +1,4 @@
+import { useBoard } from '../app/hooks.ts'
 import { BANK_A_KEYS, BANK_B_KEYS } from '../state/defaults.ts'
 import { keyLabel } from '../state/keys.ts'
 import { Dialog } from './Dialog.tsx'
@@ -14,6 +15,9 @@ function KeyBlock({ keys, caption }: { keys: readonly string[]; caption: string 
 }
 
 export function HelpDialog({ onClose }: { onClose(): void }) {
+  const bankNames = useBoard((state) => state.bankNames)
+  const caption = (bank: number, letter: string) =>
+    bankNames[bank] === `BANK ${letter}` ? `Bank ${letter}` : `Bank ${letter} — ${bankNames[bank]}`
   return (
     <Dialog title="Quick reference" onClose={onClose}>
       <section>
@@ -23,8 +27,8 @@ export function HelpDialog({ onClose }: { onClose(): void }) {
           under your right. Keys work for every bank, whichever bank is on screen.
         </p>
         <div className="keymap" style={{ marginTop: 12 }}>
-          <KeyBlock keys={BANK_A_KEYS} caption="Bank A — Memes" />
-          <KeyBlock keys={BANK_B_KEYS} caption="Bank B — SFX" />
+          <KeyBlock keys={BANK_A_KEYS} caption={caption(0, 'A')} />
+          <KeyBlock keys={BANK_B_KEYS} caption={caption(1, 'B')} />
         </div>
       </section>
 

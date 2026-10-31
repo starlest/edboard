@@ -1,7 +1,8 @@
 import { clamp } from '../audio/dsp/math.ts'
 import { getBuiltin } from '../audio/synth/library.ts'
-import { defaultBoard, defaultPad, DEFAULT_BANK_NAMES, DEFAULT_SETTINGS, emptyPad } from './defaults.ts'
+import { defaultBoard, defaultPad, DEFAULT_BANK_NAMES, DEFAULT_SETTINGS, emptyPad, FACTORY_REVISION } from './defaults.ts'
 import { isBindable } from './keys.ts'
+import { isLegacyFactoryPad, legacyBankName } from './legacy.ts'
 import type { BoardState, PadConfig, Settings, SoundSource } from './types.ts'
 import { BANK_COUNT, PAD_COLORS, PAD_COUNT, PLAY_MODES } from './types.ts'
 
@@ -133,14 +134,21 @@ export function sanitizeSettings(value: unknown): Settings {
   }
 }
 
-/** Turns anything (usually parsed JSON) into a valid board, keeping whatever is usable. */
+/**
+ * Turns anything (usually parsed JSON) into a valid board, keeping whatever is
+ * usable. Boards saved under an older factory layout are upgraded: pads (and
+ * bank names) the user never changed follow the current factory layout.
+ */
 export function sanitizeBoard(value: unknown): BoardState {
   const base = defaultBoard()
   if (!isRecord(value)) return base
+  const revision = Number.isInteger(value.factoryRevision) ? (value.factoryRevision as number) : 1
+  const upgrading = revision < FACTORY_REVISION
   const rawPads = Array.isArray(value.pads) ? value.pads : []
   const seen = new Set<string>()
   const pads = base.pads.map((fallback, i) => {
-    const pad = i < rawPads.length ? sanitizePad(rawPads[i], fallback) : fallback
+    let pad = i < rawPads.length ? sanitizePad(rawPads[i], fallback) : fallback
+    if (upgrading && i < rawPads.length && isLegacyFactoryPad(revision, i, pad)) pad = { ...fallback, key: pad.key }
     if (!pad.key) return pad
     if (seen.has(pad.key)) return { ...pad, key: null }
     seen.add(pad.key)
@@ -149,8 +157,12 @@ export function sanitizeBoard(value: unknown): BoardState {
   const rawNames = Array.isArray(value.bankNames) ? value.bankNames : []
   return {
     version: 1,
+    factoryRevision: FACTORY_REVISION,
     bank: Number.isInteger(value.bank) && (value.bank as number) >= 0 && (value.bank as number) < BANK_COUNT ? (value.bank as number) : 0,
-    bankNames: base.bankNames.map((fallback, i) => cleanBankName(rawNames[i], fallback)),
+    bankNames: base.bankNames.map((fallback, i) => {
+      const name = cleanBankName(rawNames[i], fallback)
+      return upgrading && name === legacyBankName(revision, i) ? fallback : name
+    }),
     pads,
     settings: sanitizeSettings(value.settings),
   }

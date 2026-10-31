@@ -1,5 +1,6 @@
 import { useRef, useState, type KeyboardEvent } from 'react'
 import { useBoard, usePad, useSoundboard, useSoundStatus } from '../app/hooks.ts'
+import { hasPackSound } from '../audio/soundPack.ts'
 import { BUILTIN_SOUNDS, getBuiltin } from '../audio/synth/library.ts'
 import type { SoundCategory } from '../audio/synth/types.ts'
 import { MAX_LABEL_LENGTH, MAX_PAD_VOLUME } from '../state/board.ts'
@@ -203,7 +204,7 @@ export function PadEditor({ pad, onClose }: PadEditorProps) {
               <optgroup key={category} label={CATEGORY_NAMES[category]}>
                 {sounds.map((sound) => (
                   <option key={sound.id} value={`builtin:${sound.id}`}>
-                    {sound.name} — {sound.description}
+                    {sound.name} — {hasPackSound(sound.id) ? `your sound-pack file (sounds/${sound.id})` : sound.description}
                   </option>
                 ))}
               </optgroup>
