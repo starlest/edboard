@@ -2,10 +2,14 @@
 
 Audio files in this folder replace Edboard's built-in sounds **for everyone who opens your deployment**, on every device. Name a file after the sound it replaces and it is picked up automatically at build time.
 
-| File | Replaces |
-| --- | --- |
-| `sounds/fah.mp3` | the FAH! pad |
-| `sounds/laugh.mp3` | the LAUGH pad |
+## Included
+
+| File | Replaces | Source |
+| --- | --- | --- |
+| `fah.mp3` | FAH! | ["Fahhh" on Myinstants](https://www.myinstants.com/en/instant/fahhh-42300/) |
+| `laugh.mp3` | LAUGH | ["Rizzbot laugh" on Myinstants](https://www.myinstants.com/en/instant/rizzbot-laugh-66507/) |
+
+Delete a file to go back to Edboard's synthesised version of that sound.
 
 ## Adding a sound
 

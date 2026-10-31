@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyGainWithLimiter, findEnd, findStart, levelGain, measureLoudness } from './loudness.ts'
+import { applyGainWithLimiter, findEnd, findOnset, findStart, levelGain, measureLoudness } from './loudness.ts'
 import { note } from './math.ts'
 import { Osc, sinePhase } from './osc.ts'
 import { Random } from './random.ts'
@@ -49,6 +49,17 @@ describe('loudness', () => {
     const loud = sine(440, 1, 0.1)
     applyGainWithLimiter([loud], 3, 0.9)
     expect(Math.max(...loud.map(Math.abs))).toBeLessThanOrEqual(0.9)
+  })
+
+  it('skips room tone before a sound, keeping a short pre-roll', () => {
+    // 0.2 s of hiss ~40 dB below the shout that follows it.
+    const clip = new Float32Array(SR)
+    for (let i = 0; i < SR * 0.2; i++) clip[i] = (i % 2 ? 1 : -1) * 0.002
+    clip.set(sine(300, 0.2, 0.8), SR * 0.2)
+    const onset = findOnset([clip], SR) / SR
+    expect(onset).toBeCloseTo(0.19, 2)
+    expect(findStart([clip], -60) / SR).toBe(0) // a fixed threshold would keep the hiss
+    expect(findOnset([new Float32Array(100)], SR)).toBe(0)
   })
 
   it('finds where sound starts and ends', () => {

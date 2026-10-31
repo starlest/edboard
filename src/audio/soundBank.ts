@@ -1,7 +1,7 @@
 import { loadStoredFile, saveFile } from '../state/fileStore.ts'
 import type { SoundSource } from '../state/types.ts'
 import { BuiltinRenderer } from './builtinRenderer.ts'
-import { findStart, levelGain, measureLoudness } from './dsp/loudness.ts'
+import { findOnset, levelGain, measureLoudness } from './dsp/loudness.ts'
 import { dbToGain } from './dsp/math.ts'
 import { SOUND_PACK } from './soundPack.ts'
 import { DEFAULT_LOUDNESS, PEAK_CEILING, type RenderedSound } from './synth/render.ts'
@@ -145,13 +145,13 @@ export class SoundBank {
   private analyse(buffer: AudioBuffer): LoadedSound {
     const channels = Array.from({ length: buffer.numberOfChannels }, (_, ch) => buffer.getChannelData(ch))
     const sr = buffer.sampleRate
-    const start = Math.min(findStart(channels, -60), buffer.length)
+    const start = Math.min(findOnset(channels, sr), Math.max(0, buffer.length - 1))
     const end = Math.min(buffer.length, start + MAX_ANALYSIS_SECONDS * sr)
     const stats = measureLoudness(channels, sr, start, end)
     return {
       buffer,
       levelGain: levelGain(stats, { targetLufs: DEFAULT_LOUDNESS, ceiling: PEAK_CEILING, maxGain: dbToGain(18) }),
-      offset: Math.max(0, start - Math.round(0.005 * sr)) / sr,
+      offset: start / sr,
     }
   }
 

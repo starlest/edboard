@@ -91,6 +91,34 @@ export function applyGainWithLimiter(
   }
 }
 
+export interface OnsetOptions {
+  /** How far below the clip's peak counts as "the sound has started" (dB). */
+  belowPeakDb?: number
+  /** Never treat anything quieter than this as sound (dBFS). */
+  floorDb?: number
+  /** Seconds kept before the detected onset so attacks aren't clipped. */
+  preRoll?: number
+}
+
+/**
+ * Where a clip's sound really starts: the first sample within `belowPeakDb`
+ * of its peak (minus a short pre-roll). Unlike a fixed threshold this also
+ * skips room tone and hiss before the sound, so pads fire without lag.
+ */
+export function findOnset(channels: readonly Float32Array[], sampleRate: number, options: OnsetOptions = {}): number {
+  const { belowPeakDb = 30, floorDb = -60, preRoll = 0.01 } = options
+  let peak = 0
+  for (const channel of channels) {
+    for (let i = 0; i < channel.length; i++) {
+      const v = channel[i] < 0 ? -channel[i] : channel[i]
+      if (v > peak) peak = v
+    }
+  }
+  if (peak === 0) return 0
+  const thresholdDb = Math.max(floorDb, 20 * Math.log10(peak) - belowPeakDb)
+  return Math.max(0, findStart(channels, thresholdDb) - Math.round(preRoll * sampleRate))
+}
+
 /** Index of the first sample louder than `thresholdDb`, or `length` if none. */
 export function findStart(channels: readonly Float32Array[], thresholdDb = -60): number {
   const threshold = dbToGain(thresholdDb)

@@ -70,13 +70,13 @@ Edboard is a static site, so any static host works. On **Vercel**, import the re
 
 The empty pads already have shortcuts (bank B too: `5-8 / T-I / G-K / B-,`). Fill them by dropping audio files on them, or pick any of the 33 built-in sounds in the pad editor: voices (FAH!, LAUGH, BRUH, OOF, WOW), meme classics (air horn, vine boom, sad trombone, ba-dum-tss, bonk, record scratch, censor bleep), stage & game show (applause, crickets, drum roll, dun-dun-dun, victory fanfare, wrong buzzer, correct ding), sound effects (laser, explosion, boing, whoosh, cha-ching, heartbeat, alarm, countdown, suspense riser, slide whistle, gong) and 8-bit (coin, power-up, game over).
 
-The built-in sounds are original synthesised takes on the classics, not the original meme recordings.
+FAH! and LAUGH play the original meme clips from the [`sounds/`](sounds/README.md) folder. The rest of the built-in sounds are original synthesised takes on the classics (and FAH!/LAUGH fall back to synthesised versions if their files are removed).
 
 ## Sound pack: make your own clips the default
 
-Want the exact meme clip — say, the original "FAH" — on every device that opens your site? Add it to the repo:
+That's how FAH! and LAUGH get their real clips. To do the same for any other sound, add the file to the repo:
 
-1. Name the file after the sound it replaces: `fah.mp3`, `laugh.mp3`, `air-horn.wav`… (ids are listed in [`sounds/README.md`](sounds/README.md)).
+1. Name the file after the sound it replaces: `air-horn.wav`, `bruh.mp3`, `vine-boom.ogg`… (ids are listed in [`sounds/README.md`](sounds/README.md)).
 2. Put it in the `sounds/` folder (on GitHub: open `sounds` → **Add file → Upload files**) and commit.
 3. Redeploy. The file is bundled at build time, trimmed and loudness-levelled like the other sounds, and replaces the synthesised version for everyone.
 
