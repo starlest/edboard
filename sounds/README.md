@@ -9,6 +9,8 @@ Audio files in this folder replace Edboard's built-in sounds **for everyone who 
 | `fah.mp3` | FAH! | ["Fahhh" on Myinstants](https://www.myinstants.com/en/instant/fahhh-42300/) |
 | `laugh.mp3` | LAUGH | ["Rizzbot laugh" on Myinstants](https://www.myinstants.com/en/instant/rizzbot-laugh-66507/) |
 
+Both clips are trimmed where the sound ends (with a short fade): the originals carry a hum and a stray tone/thump after the shout and the laugh.
+
 Delete a file to go back to Edboard's synthesised version of that sound.
 
 ## Adding a sound
