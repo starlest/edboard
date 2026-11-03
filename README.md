@@ -1,6 +1,6 @@
 # EDBOARD
 
-**A hardware-style soundboard for streamers.** Click a pad or hit a shortcut to fire a sound on stream — FAH!, a laugh, air horn, vine boom and more are built in, and you can drop your own clips onto any pad.
+**A hardware-style soundboard for streamers.** Click a pad or hit a shortcut to fire a sound on stream — FAH!, a laugh, anime wow, air horn, vine boom and more are built in, and you can drop your own clips onto any pad.
 
 ![EDBOARD — a sampler-style soundboard with glowing pads, an amber LCD, knobs and LED meters](docs/edboard.jpg)
 
@@ -8,7 +8,7 @@ It looks and behaves like a piece of studio gear: rubber pads that press down an
 
 ## Features
 
-- **64 pads in 4 banks** (4 × 4 grid, like an MPC / SP-404). The factory board starts with 8 sounds on bank A; every other pad is yours to fill.
+- **64 pads in 4 banks** (4 × 4 grid, like an MPC / SP-404). The factory board starts with 9 sounds on bank A; every other pad is yours to fill.
 - **33 built-in sounds, no samples shipped.** Every built-in sound is synthesised in code at start-up (a formant voice synthesiser does the "FAH!", "LAUGH", "BRUH", "OOF" and "WOW"), so there is no licensed audio in the repo and nothing to download.
 - **Sound pack:** put an audio file named after a built-in sound in [`sounds/`](sounds/README.md) (e.g. `sounds/fah.mp3`) and it replaces that sound for everyone who opens your deployment.
 - **Keyboard shortcuts laid out like the pads.** Bank A sits under your left hand (`1-4 / Q-R / A-F / Z-V`), bank B under your right (`5-8 / T-I / G-K / B-,`). Shortcuts work for every bank, whichever one is on screen, and can be re-bound to any key (numpad and F13–F24 for macro keyboards / Stream Deck included).
@@ -65,16 +65,16 @@ Edboard is a static site, so any static host works. On **Vercel**, import the re
 | --- | --- | --- | --- |
 | `1` FAH! | `2` LAUGH | `3` AIR HORN | `4` VINE BOOM |
 | `Q` BRUH | `W` SAD TROMBONE | `E` BA DUM TSS | `R` CRICKETS |
-| `A` · | `S` · | `D` · | `F` · |
+| `A` ANIME WOW | `S` · | `D` · | `F` · |
 | `Z` · | `X` · | `C` · | `V` · |
 
 The empty pads already have shortcuts (bank B too: `5-8 / T-I / G-K / B-,`). Fill them by dropping audio files on them, or pick any of the 33 built-in sounds in the pad editor: voices (FAH!, LAUGH, BRUH, OOF, WOW), meme classics (air horn, vine boom, sad trombone, ba-dum-tss, bonk, record scratch, censor bleep), stage & game show (applause, crickets, drum roll, dun-dun-dun, victory fanfare, wrong buzzer, correct ding), sound effects (laser, explosion, boing, whoosh, cha-ching, heartbeat, alarm, countdown, suspense riser, slide whistle, gong) and 8-bit (coin, power-up, game over).
 
-FAH! and LAUGH play the original meme clips from the [`sounds/`](sounds/README.md) folder. The rest of the built-in sounds are original synthesised takes on the classics (and FAH!/LAUGH fall back to synthesised versions if their files are removed).
+FAH!, LAUGH and ANIME WOW play the original meme clips from the [`sounds/`](sounds/README.md) folder. The rest of the built-in sounds are original synthesised takes on the classics (and those three fall back to synthesised versions if their files are removed).
 
 ## Sound pack: make your own clips the default
 
-That's how FAH! and LAUGH get their real clips. To do the same for any other sound, add the file to the repo:
+That's how FAH!, LAUGH and ANIME WOW get their real clips. To do the same for any other sound, add the file to the repo:
 
 1. Name the file after the sound it replaces: `air-horn.wav`, `bruh.mp3`, `vine-boom.ogg`… (ids are listed in [`sounds/README.md`](sounds/README.md)).
 2. Put it in the `sounds/` folder (on GitHub: open `sounds` → **Add file → Upload files**) and commit.

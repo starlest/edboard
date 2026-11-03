@@ -8,8 +8,9 @@ Audio files in this folder replace Edboard's built-in sounds **for everyone who 
 | --- | --- | --- |
 | `fah.mp3` | FAH! | ["Fahhh" on Myinstants](https://www.myinstants.com/en/instant/fahhh-42300/) |
 | `laugh.mp3` | LAUGH | ["Rizzbot laugh" on Myinstants](https://www.myinstants.com/en/instant/rizzbot-laugh-66507/) |
+| `wow.mp3` | ANIME WOW (the `wow` sound) | ["Anime Wow" on Myinstants](https://www.myinstants.com/en/instant/anime-wow/) |
 
-Both clips are trimmed where the sound ends (with a short fade): the originals carry a hum and a stray tone/thump after the shout and the laugh.
+The FAH and laugh clips are trimmed where the sound ends (with a short fade): the originals carry a hum and a stray tone/thump after the shout and the laugh. The anime wow is used as-is (its tail is the effect's own echo).
 
 Delete a file to go back to Edboard's synthesised version of that sound.
 
@@ -33,7 +34,7 @@ Every built-in sound can be replaced; "Default board" marks the ones on the fact
 | `laugh` | LAUGH | yes |
 | `bruh` | BRUH | yes |
 | `oof` | OOF |  |
-| `wow` | WOW |  |
+| `wow` | WOW | yes |
 | `air-horn` | AIR HORN | yes |
 | `vine-boom` | VINE BOOM | yes |
 | `sad-trombone` | SAD TROMBONE | yes |

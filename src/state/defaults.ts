@@ -26,7 +26,7 @@ export type Preset = readonly [builtinId: string, label: string, color: PadColor
  * Bumped whenever the factory layout changes. Boards saved under an older
  * revision get their untouched pads moved to the new layout (see legacy.ts).
  */
-export const FACTORY_REVISION = 2
+export const FACTORY_REVISION = 3
 
 /** Factory sounds, in pad order from A01. Everything after them starts empty. */
 const FACTORY_PADS: readonly Preset[] = [
@@ -38,6 +38,7 @@ const FACTORY_PADS: readonly Preset[] = [
   ['sad-trombone', 'SAD TROMBONE', 'blue'],
   ['rimshot', 'BA DUM TSS', 'lime'],
   ['crickets', 'CRICKETS', 'green'],
+  ['wow', 'ANIME WOW', 'pink'],
 ]
 
 export const DEFAULT_BANK_NAMES = ['MEMES', 'BANK B', 'BANK C', 'BANK D']

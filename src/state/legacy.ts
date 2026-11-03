@@ -1,4 +1,4 @@
-import { presetPad, type Preset } from './defaults.ts'
+import { emptyPad, presetPad, type Preset } from './defaults.ts'
 import type { PadConfig } from './types.ts'
 
 /**
@@ -43,8 +43,20 @@ const REVISION_1: readonly Preset[] = [
   ['gong', 'GONG', 'amber'],
 ]
 
+const REVISION_2: readonly Preset[] = [
+  ['fah', 'FAH!', 'red'],
+  ['laugh', 'LAUGH', 'amber'],
+  ['air-horn', 'AIR HORN', 'orange'],
+  ['vine-boom', 'VINE BOOM', 'violet'],
+  ['bruh', 'BRUH', 'teal'],
+  ['sad-trombone', 'SAD TROMBONE', 'blue'],
+  ['rimshot', 'BA DUM TSS', 'lime'],
+  ['crickets', 'CRICKETS', 'green'],
+]
+
 const LEGACY_LAYOUTS: Record<number, { pads: readonly Preset[]; bankNames: readonly string[] }> = {
   1: { pads: REVISION_1, bankNames: ['MEMES', 'SFX', 'BANK C', 'BANK D'] },
+  2: { pads: REVISION_2, bankNames: ['MEMES', 'BANK B', 'BANK C', 'BANK D'] },
 }
 
 function samePad(a: PadConfig, b: PadConfig): boolean {
@@ -59,10 +71,15 @@ function samePad(a: PadConfig, b: PadConfig): boolean {
   )
 }
 
-/** Whether `pad` is exactly what the given factory revision put on pad `index`. */
+/**
+ * Whether `pad` is exactly what the given factory revision put on pad `index`
+ * (a preset, or an empty pad past the end of that revision's presets).
+ */
 export function isLegacyFactoryPad(revision: number, index: number, pad: PadConfig): boolean {
-  const preset = LEGACY_LAYOUTS[revision]?.pads[index]
-  return preset !== undefined && samePad(pad, presetPad(preset, pad.key))
+  const layout = LEGACY_LAYOUTS[revision]
+  if (!layout) return false
+  const preset = layout.pads[index]
+  return samePad(pad, preset ? presetPad(preset, pad.key) : emptyPad(pad.key))
 }
 
 /** The bank name a given factory revision used (to tell renamed banks from defaults). */
@@ -70,7 +87,7 @@ export function legacyBankName(revision: number, bank: number): string | undefin
   return LEGACY_LAYOUTS[revision]?.bankNames[bank]
 }
 
-/** The full pad list a past factory revision shipped with (used to test upgrades). */
+/** The pads a past factory revision shipped with, presets first (used to test upgrades). */
 export function legacyFactoryPads(revision: number, keyFor: (pad: number) => string | null): PadConfig[] {
   return (LEGACY_LAYOUTS[revision]?.pads ?? []).map((preset, pad) => presetPad(preset, keyFor(pad)))
 }

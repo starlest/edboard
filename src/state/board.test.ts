@@ -17,8 +17,8 @@ describe('default board', () => {
     expect(board.bank).toBe(0)
   })
 
-  it('puts 8 sounds on the top of bank A and leaves every other pad empty', () => {
-    expect(board.pads.slice(0, 8).map((p) => p.label)).toEqual([
+  it('puts 9 sounds on bank A and leaves every other pad empty', () => {
+    expect(board.pads.slice(0, 9).map((p) => p.label)).toEqual([
       'FAH!',
       'LAUGH',
       'AIR HORN',
@@ -27,13 +27,14 @@ describe('default board', () => {
       'SAD TROMBONE',
       'BA DUM TSS',
       'CRICKETS',
+      'ANIME WOW',
     ])
-    for (let pad = 0; pad < 8; pad++) {
+    for (let pad = 0; pad < 9; pad++) {
       const source = board.pads[pad].source
       expect(source?.kind).toBe('builtin')
       if (source?.kind === 'builtin') expect(getBuiltin(source.id), source.id).toBeDefined()
     }
-    for (let pad = 8; pad < PAD_COUNT; pad++) expect(board.pads[pad].source).toBeNull()
+    for (let pad = 9; pad < PAD_COUNT; pad++) expect(board.pads[pad].source).toBeNull()
     expect(board.factoryRevision).toBe(FACTORY_REVISION)
   })
 
@@ -45,7 +46,7 @@ describe('default board', () => {
   })
 
   it('keeps shortcuts on the empty pads so loaded sounds are playable straight away', () => {
-    expect(board.pads[8]).toMatchObject({ source: null, key: 'KeyA' })
+    expect(board.pads[9]).toMatchObject({ source: null, key: 'KeyS' })
     expect(board.pads[16]).toMatchObject({ source: null, key: 'Digit5' })
     expect(board.pads[32].key).toBeNull()
   })
@@ -161,6 +162,19 @@ describe('upgrading boards saved under the old 32-sound layout', () => {
     expect(board.pads[9]).toMatchObject({ label: 'NAILED IT', source: { kind: 'builtin', id: 'correct' } })
     expect(board.pads[15]).toMatchObject({ source: null, key: 'Space' })
     expect(board.bankNames[1]).toBe('MY SFX')
+  })
+
+  it('gives boards saved with the 8-sound layout the new ANIME WOW pad, unless A09 was used', () => {
+    const revision2 = () => {
+      const board = JSON.parse(JSON.stringify(defaultBoard()))
+      board.factoryRevision = 2
+      board.pads[8] = { label: '', color: 'white', key: 'KeyA', volume: 1, mode: 'oneshot', source: null, autoLevel: true }
+      return board
+    }
+    expect(sanitizeBoard(revision2()).pads[8]).toMatchObject({ label: 'ANIME WOW', key: 'KeyA', source: { kind: 'builtin', id: 'wow' } })
+    const used = revision2()
+    used.pads[8] = { ...used.pads[8], label: 'MY CLIP', source: { kind: 'file', fileId: 'x', name: 'clip.mp3' } }
+    expect(sanitizeBoard(used).pads[8]).toMatchObject({ label: 'MY CLIP', source: { kind: 'file', fileId: 'x' } })
   })
 
   it('leaves boards saved under the current layout alone', () => {
